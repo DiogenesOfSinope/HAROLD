@@ -208,8 +208,8 @@ class RewardsCfg:
             "gait_vel_sigma": 0.25,
             "kappa_gait_probs": 0.05,
             "command_name": "gait_command",
-            "sensor_cfg": SceneEntityCfg("contact_forces_ALL", body_names=["LeftCalf", "RightCalf"]),
-            "asset_cfg": SceneEntityCfg("robot", body_names=["LeftCalf", "RightCalf"]),
+            "sensor_cfg": SceneEntityCfg("contact_forces_ALL", body_names=["LeftFoot", "RightFoot"]),
+            "asset_cfg": SceneEntityCfg("robot", body_names=["LeftFoot", "RightFoot"]),
         },
     )
 

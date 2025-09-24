@@ -59,24 +59,26 @@ LimX:
     - He was a prof in the US so should understand English well.
 
 CHANGELOG:
-- Copied get_gait_phase() from LimX repo to observations.py.
-- Added gait_phase to observations in harold_env_cfg.py.
-- Runs with no errors at this point.
-- Added proj_gravity as an observation term in harold_env_cfg.py.
-- Deleted body_orientation, joint_pos_rel, joint_pos_error, and base_lin_vel as an observation term in harold_env_cfg.py.
-- Removed history attribute from joint_vel and actions in harold_env_cfg.py.
-- Deleted a number of observation history length variables in harold_cfg.py and replaced them all with one variable, obs_history_length.
-- Set all observations to have a history length of obs_history_length in harold_env_cfg.py.
-- Added keep_balance, pen_base_height rewards in harold_env_cfg.py.
-    - Changed the function for pen_base_height from LimX's custom base_com_height function to the standard base_height_l2 in Isaac Lab.
-- Changed std of exp rewards functions to sqrt(0.2) from sqrt(0.25) to match LimX repo in harold_env_cfg.py.
-- Added stay_alive_rew_weight=1.0, target_height=0.35, base_height_rew_weight=-20.0 to harold_cfg.py.
-- Set z_lin_vel_rew_weight=-0.5, xy_ang_vel_rew_weight=-0.05, flat_body_weight=-10.0 to match LimX repo in harold_cfg.py.
-- Removed termination_penalty rewards from harold_env_cfg.py.
-- Copied test_gait_reward from LimX repo to rewards in harold_env_cfg.py.
-    - Changed contact_forces to contact_forces_ALL to work with existing sensor.
-    - Changed "foot_.*" to ["LeftCalf","RightCalf"] to work with our USD file.
-- Copied GaitReward() from LimX repo to rewards.py.
-- Changed history_length to 4 from 1 for contact_forces_ALL in harold_env_cfg.py to match LimX repo.
-- Copied stay_alive() reward function from LimX repo to rewards.py.
-- Verified code is working and can train a robot to vaguely stay up for a second or so.
+- Saved HAROLD_R1.usd as HAROLD_R1_FLAT.usd (I saved as flattened so it could be modified).
+    - I then created a LeftFoot XPrim and RightFoot XPrim (as renamed duplicates of the LeftCalf and RightCalf XPrims).
+        - I then deleted the subprims of the left and right feet from LeftCalf and RightCalf and deleted all others than the feet from LeftFoot and RightFoot Xprims.
+            - I then created two new fixed joints between the left calf and left foot, and right calf and right foot and made sure that they were in the same level of the hierarchy as the other joints.
+- I played around with the new FLAT usd file's robot in Isaac Sim with Shift-Left-Click flinging for a bit and it seems to work OK.
+- I then changed harold.py to point to HAROLD_R1_FLAT.usd instead of HAROLD_R1.usd.
+- Modified test_gait_reward in harold_env_cfg.py to use "LeftFoot" and "RightFoot" instead of "LeftCalf" and "RightCalf".
+- Verified that train.py and play.py run fine with the changes without errors, and physics seems to look ok.
+- Trained for about 14 hours in total (~290k steps).
+    - First run was 48 minutes.
+    - Seconds run was 1 hour 21 minutes.
+    - Third run was 12 hours 5 minutes.
+    - Each run fine tuned from the best_agent.pt of the previous run.
+    - Honestly not terrible but I noticed some weird things going on:
+        - It seems to me like it may have been too focused on maintaining an accurate z height and minimizing xy angular velocity that it was forced to speed up and slow down during every step.
+            - So that while it did in fact walk in the correct direction and generally reached the required speed, it would slow down during part of every step.
+        - I also got the feeling that the Von Mises distribution used by LimX in their GaitReward may have been fighting with the other rewards. Hard to describe.
+    - Generated a 4 second video and saved the best_agent.pt.
+- Concepts of a plan going forward:
+    - Switch to RSL RL to match LimX.
+    - Add a dedicated critic network and provide it with priveleged information.
+    - Make our code as close to LimX's as possible.
+    - Possibly change or get rid of the GaitReward function that LimX used as I have no clue how to go about tuning its values.

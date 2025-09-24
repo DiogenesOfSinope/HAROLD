@@ -1,8 +1,13 @@
 """
 python scripts/skrl/train.py --task=Harold-Walking --num_envs 4 --headless --max_iterations 10
-python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 1500
+python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 10500
+python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 10500 --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_21-33-58_ppo_torch/checkpoints/best_agent.pt"
 python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_19-33-51_ppo_torch/checkpoints/best_agent.pt"
+python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_23-12-21_ppo_torch/checkpoints/best_agent.pt"
+python scripts/skrl/play.py --task=Harold-Walking --num_envs 1 --device cpu --video --video_length 200  --headless --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_23-12-21_ppo_torch/checkpoints/best_agent.pt"
+
+
+Running play.py is faster using CPU than GPU.
 
 tensorboard --logdir logs
 localhost:6006
