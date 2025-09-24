@@ -47,7 +47,7 @@ class HaroldSceneCfg(InteractiveSceneCfg):
     contact_forces_ALL = ContactSensorCfg(
         prim_path="{ENV_REGEX_NS}/Robot/HAROLD_R1_AS/HAROLD_R1_AS/.*", # A path which includes all of the robot's prims.
         update_period=0.0,
-        history_length=1,
+        history_length=4,
         debug_vis=False,
         track_air_time=True,
     )
@@ -115,26 +115,26 @@ class ObservationsCfg:
     # Define the observation terms available to the agent.
     @configclass
     class PolicyCfg(ObsGroup):
-        body_orientation            = ObsTerm(func=mdp.root_euler_w)
-        body_angular_velocity       = ObsTerm(func=mdp.base_ang_vel)
-        joint_pos                   = ObsTerm(func=mdp.joint_pos)
-        joint_pos_rel               = ObsTerm(func=mdp.joint_pos_rel)
-        joint_pos_error             = ObsTerm(func=mdp.joint_pos_error, history_length=harold_cfg.joint_pos_error_history)
-        joint_vel                   = ObsTerm(func=mdp.joint_vel_rel, history_length=harold_cfg.joint_vel_history)
-        actions                     = ObsTerm(func=mdp.last_action, history_length=harold_cfg.actions_history)
+        body_angular_velocity       = ObsTerm(func=mdp.base_ang_vel, history_length=harold_cfg.obs_history_length)
+        proj_gravity                = ObsTerm(func=mdp.projected_gravity, history_length=harold_cfg.obs_history_length)
+        joint_pos                   = ObsTerm(func=mdp.joint_pos, history_length=harold_cfg.obs_history_length)
+        joint_vel                   = ObsTerm(func=mdp.joint_vel_rel, history_length=harold_cfg.obs_history_length)
+        actions                     = ObsTerm(func=mdp.last_action, history_length=harold_cfg.obs_history_length)
         velocity_commands           = ObsTerm(
             func=mdp.generated_commands,
+            history_length=harold_cfg.obs_history_length,
             params={
                 "command_name": "base_velocity",
             }
         )
+        gait_phase = ObsTerm(func=mdp.get_gait_phase, history_length=harold_cfg.obs_history_length)
         gait_command                = ObsTerm(
             func=mdp.get_gait_command,
+            history_length=harold_cfg.obs_history_length,
             params={
                 "command_name": "gait_command"
             }
         )
-        base_lin_vel                = ObsTerm(func=mdp.root_lin_vel_w)
 
         # Post initialization.
         def __post_init__(self) -> None:
@@ -157,13 +157,19 @@ class EventCfg:
 ### --- MDP REWARDS --- ###
 @configclass
 class RewardsCfg:
+
+    keep_balance = RewTerm(
+        func=mdp.stay_alive,
+        weight=harold_cfg.stay_alive_rew_weight
+    )
+
     # r_v
     track_lin_vel_xy_exp =      RewTerm(
         func=mdp.track_lin_vel_xy_exp,
         weight=harold_cfg.xy_lin_vel_rew_weight,
         params={
             "command_name": "base_velocity",
-            "std": math.sqrt(1/4.0)
+            "std": math.sqrt(0.2)
         },
     )
     # r_w
@@ -172,16 +178,41 @@ class RewardsCfg:
         weight=harold_cfg.z_ang_vel_rew_weight,
         params={
             "command_name": "base_velocity",
-            "std": math.sqrt(1/4.0)
+            "std": math.sqrt(0.2)
         },
     )
+
+    pen_base_height = RewTerm(
+        func=mdp.base_height_l2,
+        params={
+            "target_height": harold_cfg.target_height,
+        },
+        weight=harold_cfg.base_height_rew_weight,
+    )
+
     # r_vz
     lin_vel_z_l2 =              RewTerm(func=mdp.lin_vel_z_l2, weight=harold_cfg.z_lin_vel_rew_weight)
     # r_wxy
     ang_vel_xy_l2 =             RewTerm(func=mdp.ang_vel_xy_l2, weight=harold_cfg.xy_ang_vel_rew_weight)
     # (Not included in the BRAVER paper)
     flat_orientation_rew =      RewTerm(func=mdp.flat_orientation_l2, weight=harold_cfg.flat_body_weight)
-    termination_penalty = RewTerm(func=mdp.is_terminated, weight=harold_cfg.termination_penalty)
+
+    # Gait reward
+    test_gait_reward = RewTerm(
+        func=mdp.GaitReward,
+        weight=1.0,
+        params={
+            "tracking_contacts_shaped_force": -2.0,
+            "tracking_contacts_shaped_vel": -2.0,
+            "gait_force_sigma": 25.0,
+            "gait_vel_sigma": 0.25,
+            "kappa_gait_probs": 0.05,
+            "command_name": "gait_command",
+            "sensor_cfg": SceneEntityCfg("contact_forces_ALL", body_names=["LeftCalf", "RightCalf"]),
+            "asset_cfg": SceneEntityCfg("robot", body_names=["LeftCalf", "RightCalf"]),
+        },
+    )
+
 
 ### --- MDP TERMINATIONS --- ###
 @configclass

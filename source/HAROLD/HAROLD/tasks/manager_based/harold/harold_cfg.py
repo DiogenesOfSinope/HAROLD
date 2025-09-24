@@ -1,8 +1,8 @@
 """
 python scripts/skrl/train.py --task=Harold-Walking --num_envs 4 --headless --max_iterations 10
-python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 500
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 1 --device cpu
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-22_17-20-40_ppo_torch/checkpoints/agent_7200.pt"
+python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 1500
+python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu
+python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_19-33-51_ppo_torch/checkpoints/best_agent.pt"
 
 tensorboard --logdir logs
 localhost:6006
@@ -41,17 +41,18 @@ joint_action_scale      =   0.25                # Scale factor applied to the ag
 # OBSERVATIONS
 # History values default to 0.
 # If history is set to x, the agent observes the current value as well as the past x values.
-joint_pos_error_history =   4                   # 4 per the BRAVER paper.
-joint_vel_history       =   5                   # 5 per the BRAVER paper.
-actions_history         =   4                   # 4 per the BRAVER paper.
+obs_history_length      =   10                  # History length of observations.
 
 # REWARDS
+stay_alive_rew_weight   =   1.0                 # Reward weight for staying alive at each time step.
 xy_lin_vel_rew_weight   =   1.0                 # Reward weight for accurately tracking the xy velocity.
 z_ang_vel_rew_weight    =   0.5                 # Reward weight for accurately tracking the z axis angular velocity.
-z_lin_vel_rew_weight    =  -2.0                 # Reward weight for accurately maintaining a z velocity of zero.
-xy_ang_vel_rew_weight   =  -0.015               # Reward weight for accurately maintaining an xy angular velocity of zero.
+target_height           =   0.35                # Target height to keep the robot's body at.
+base_height_rew_weight  =  -20.0                # Reward weight for keeping base height close to desired.
+z_lin_vel_rew_weight    =  -0.5                 # Reward weight for accurately maintaining a z velocity of zero.
+xy_ang_vel_rew_weight   =  -0.05                # Reward weight for accurately maintaining an xy angular velocity of zero.
 feet_tracking_weight    =  -20.0                # Reward weight for accurately tracking feet with their reference trajectories.
-flat_body_weight        =  -0.0                 # Reward weight for keeping the body close to vertical.
+flat_body_weight        =  -10.0                # Reward weight for keeping the body close to vertical.
 termination_penalty     =  -0.0                 # Termination penalty.
 
 # SIMULATION
