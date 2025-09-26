@@ -6,7 +6,7 @@ from . import harold_cfg
 ### --- ARTICULATION DEFINITION --- ###
 HAROLD_CFG = ArticulationCfg(
     spawn = sim_utils.UsdFileCfg(
-        usd_path=f"/home/c/Documents/HAROLD/USD_HAROLD_R1/HAROLD_R1_FLAT.usd", # Path to USD file.
+        usd_path=f"/home/c/Documents/harold/HAROLD/USD_HAROLD_R1/HAROLD_R1_FLAT.usd", # Path to USD file.
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,

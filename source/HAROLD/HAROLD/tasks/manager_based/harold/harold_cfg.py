@@ -1,18 +1,3 @@
-"""
-python scripts/skrl/train.py --task=Harold-Walking --num_envs 4 --headless --max_iterations 10
-python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 10500
-python scripts/skrl/train.py --task=Harold-Walking --num_envs 4096 --headless --max_iterations 10500 --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_21-33-58_ppo_torch/checkpoints/best_agent.pt"
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 4 --device cpu --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_23-12-21_ppo_torch/checkpoints/best_agent.pt"
-python scripts/skrl/play.py --task=Harold-Walking --num_envs 1 --device cpu --video --video_length 200  --headless --checkpoint "/home/c/Documents/HAROLD/logs/skrl/harold/2025-09-23_23-12-21_ppo_torch/checkpoints/best_agent.pt"
-
-
-Running play.py is faster using CPU than GPU.
-
-tensorboard --logdir logs
-localhost:6006
-"""
-
 ### --- PARAMETERS --- ###
 
 # GAIT
@@ -47,6 +32,32 @@ joint_action_scale      =   0.25                # Scale factor applied to the ag
 # History values default to 0.
 # If history is set to x, the agent observes the current value as well as the past x values.
 obs_history_length      =   10                  # History length of observations.
+
+# EVENTS
+static_friction_min     =   1.0                 # Minimum coefficient of static friction for random distribution.
+static_friction_max     =   1.0                 # Maximum coefficient of static friction for random distribution.
+dynamic_friction_min    =   1.0                 # Minimum coefficient of dynamic friction for random distribution.
+dynamic_friction_max    =   1.0                 # Maximum coefficient of dynamic friction for random distribution.
+restitution_min         =   0.0                 # Minimum coefficient of restitution for random distribution.
+restitution_max         =   0.0                 # Maximum coefficient of restitution for random distribution.
+x_pose_range_min        =  -0.5                 # Minimum sampled x coordinate on reset.
+x_pose_range_max        =   0.5                 # Maximum sampled x coordinate on reset.
+y_pose_range_min        =  -0.5                 # Minimum sampled y coordinate on reset.
+y_pose_range_max        =   0.5                 # Maximum sampled y coordinate on reset.
+yaw_pose_range_min      =  -3.14                # Minimum sampled yaw on reset.
+yaw_pose_range_max      =   3.14                # Maximum sampled yaw on reset.
+reset_vel_x_min         =  -0.5                 # Minimum sampled x velocity on reset.
+reset_vel_x_max         =   0.5                 # Maximum sampled x velocity on reset.
+reset_vel_y_min         =  -0.5                 # Minimum sampled y velocity on reset.
+reset_vel_y_max         =   0.5                 # Maximum sampled y velocity on reset.
+reset_vel_z_min         =  -0.5                 # Minimum sampled z velocity on reset.
+reset_vel_z_max         =   0.5                 # Maximum sampled z velocity on reset.
+reset_roll_vel_min      =  -0.5                 # Minimum sampled roll angular velocity on reset.
+reset_roll_vel_max      =   0.5                 # Maximum sampled roll angular velocity on reset.
+reset_pitch_vel_min     =  -0.5                 # Minimum sampled pitch angular velocity on reset.
+reset_pitch_vel_max     =   0.5                 # Maximum sampled pitch angular velocity on reset.
+reset_yaw_vel_min       =  -0.5                 # Minimum sampled yaw angular velocity on reset.
+reset_yaw_vel_max       =   0.5                 # Maximum sampled yaw angular velocity on reset.
 
 # REWARDS
 stay_alive_rew_weight   =   1.0                 # Reward weight for staying alive at each time step.
