@@ -91,12 +91,12 @@ class ObservationsCfg:
     # Define the observation terms available to the agent.
     @configclass
     class PolicyCfg(ObsGroup):
-        body_angular_velocity       = ObsTerm(func=mdp.base_ang_vel, history_length=harold_cfg.obs_history_length)
+        base_ang_vel                = ObsTerm(func=mdp.base_ang_vel, history_length=harold_cfg.obs_history_length)
         proj_gravity                = ObsTerm(func=mdp.projected_gravity, history_length=harold_cfg.obs_history_length)
-        joint_pos                   = ObsTerm(func=mdp.joint_pos, history_length=harold_cfg.obs_history_length)
-        joint_vel                   = ObsTerm(func=mdp.joint_vel_rel, history_length=harold_cfg.obs_history_length)
-        actions                     = ObsTerm(func=mdp.last_action, history_length=harold_cfg.obs_history_length)
-        velocity_commands           = ObsTerm(
+        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=harold_cfg.obs_history_length)
+        joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=harold_cfg.obs_history_length)
+        last_action                 = ObsTerm(func=mdp.last_action, history_length=harold_cfg.obs_history_length)
+        velocity_command            = ObsTerm(
             func=mdp.generated_commands,
             history_length=harold_cfg.obs_history_length,
             params={
@@ -116,7 +116,63 @@ class ObservationsCfg:
         def __post_init__(self) -> None:
             self.enable_corruption = False
             self.concatenate_terms = True
+
+    # LimX used a separate encoder (and thus a separate ObsGroup) for history -> we should consider doing this too in the future.
+        # But for now we will just use the built-in history_length option for simplicity.
+
+    @configclass
+    class CriticCfg(ObsGroup):
+        # LimX didn't add history to any of these terms, but I'm going to add them and see if it works ok.
+        # Policy Observations
+        base_ang_vel                = ObsTerm(func=mdp.base_ang_vel, history_length=harold_cfg.obs_history_length)
+        proj_gravity                = ObsTerm(func=mdp.projected_gravity, history_length=harold_cfg.obs_history_length)
+        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=harold_cfg.obs_history_length)
+        joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=harold_cfg.obs_history_length)
+        last_action                 = ObsTerm(func=mdp.last_action, history_length=harold_cfg.obs_history_length)
+        velocity_command            = ObsTerm(
+            func=mdp.generated_commands,
+            history_length=harold_cfg.obs_history_length,
+            params={
+                "command_name": "base_velocity",
+            }
+        )
+        gait_phase = ObsTerm(func=mdp.get_gait_phase, history_length=harold_cfg.obs_history_length)
+        gait_command                = ObsTerm(
+            func=mdp.get_gait_command,
+            history_length=harold_cfg.obs_history_length,
+            params={
+                "command_name": "gait_command"
+            }
+        )
+
+        # Privileged Observations
+        base_lin_vel                = ObsTerm(func=mdp.base_lin_vel, history_length=harold_cfg.obs_history_length)
+        height                      = ObsTerm(func=mdp.base_pos_z, history_length=harold_cfg.obs_history_length)  # LimX uses a height scanner sensor for this, but for now I think this should be OK since we are on flat terrain.
+        robot_joint_torque          = ObsTerm(func=mdp.robot_joint_torque, history_length=harold_cfg.obs_history_length)
+        robot_joint_acc             = ObsTerm(func=mdp.robot_joint_acc, history_length=harold_cfg.obs_history_length)
+        robot_feet_contact_force = ObsTerm(
+            func=mdp.robot_feet_contact_force,
+            history_length=harold_cfg.obs_history_length,
+            params={
+                "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["LeftFoot", "RightFoot"]),
+            },
+        )
+        robot_mass = ObsTerm(func=mdp.robot_mass)
+        robot_inertia = ObsTerm(func=mdp.robot_inertia)
+        robot_joint_stiffness = ObsTerm(func=mdp.robot_joint_stiffness)
+        robot_joint_damping = ObsTerm(func=mdp.robot_joint_damping)
+        robot_pos = ObsTerm(func=mdp.robot_pos, history_length=harold_cfg.obs_history_length)
+        robot_vel = ObsTerm(func=mdp.robot_vel, history_length=harold_cfg.obs_history_length)
+        robot_material_properties = ObsTerm(func=mdp.robot_material_properties)
+        robot_base_pose = ObsTerm(func=mdp.robot_base_pose)
+
+        # Post initialization.
+        def __post_init__(self) -> None:
+            self.enable_corruption = False
+            self.concatenate_terms = True
+
     policy: PolicyCfg = PolicyCfg()
+    critic: CriticCfg = CriticCfg()
 
 ### --- MDP EVENTS --- ###
 @configclass
