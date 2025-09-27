@@ -60,15 +60,23 @@ reset_yaw_vel_min       =  -0.5                 # Minimum sampled yaw angular ve
 reset_yaw_vel_max       =   0.5                 # Maximum sampled yaw angular velocity on reset.
 
 # REWARDS
-stay_alive_rew_weight   =   1.0                 # Reward weight for staying alive at each time step.
-xy_lin_vel_rew_weight   =   1.0                 # Reward weight for accurately tracking the xy velocity.
-z_ang_vel_rew_weight    =   0.5                 # Reward weight for accurately tracking the z axis angular velocity.
+keep_balance_weight     =   1.0                 # Reward weight for staying alive at each time step.
+rew_lin_vel_xy_weight   =   1.0                 # Reward weight for accurately tracking the xy velocity.
+rew_ang_vel_z_weight    =   0.5                 # Reward weight for accurately tracking the z axis angular velocity.
 target_height           =   0.35                # Target height to keep the robot's body at.
-base_height_rew_weight  =  -20.0                # Reward weight for keeping base height close to desired.
-z_lin_vel_rew_weight    =  -0.5                 # Reward weight for accurately maintaining a z velocity of zero.
-xy_ang_vel_rew_weight   =  -0.05                # Reward weight for accurately maintaining an xy angular velocity of zero.
-feet_tracking_weight    =  -20.0                # Reward weight for accurately tracking feet with their reference trajectories.
+pen_base_height_weight  =  -20.0                # Reward weight for keeping base height close to desired.
+pen_lin_vel_z_weight    =  -0.5                 # Reward weight for accurately maintaining a z velocity of zero.
+pen_ang_vel_xy_weight   =  -0.05                # Reward weight for accurately maintaining an xy angular velocity of zero.
+pen_joint_torque_weight =  -0.00008             # Penalizes joint torques.
+pen_joint_accel_weight  =  -2.5e-07             # Penalizes joint accelerations.
+pen_action_rate_weight  =  -0.03                # Penalizes the action rate.
+pen_actn_smooth_weight  =  -0.04                # Penalizes action smoothness?
 flat_body_weight        =  -10.0                # Reward weight for keeping the body close to vertical.
+pen_joint_vel_l2_weight =  -1e-03               # Penalizes joint velocity l2 norm.
+pen_joint_powers_weight =  -5e-04               # Penalizes joint powers.
+
+
+feet_tracking_weight    =  -20.0                # Reward weight for accurately tracking feet with their reference trajectories.
 termination_penalty     =  -0.0                 # Termination penalty.
 
 # SIMULATION
@@ -79,7 +87,7 @@ decimation_factor       =   4                   # Decimation factor.
 physics_time_step       =   0.005               # Length of physics time step (seconds).
 render_interval_factor  =   4                   # Render interval factor.
 episode_length          =   20.0                # Episode length (seconds).
-camera_pos              =   (2.0, 2.0, 1.2)     # Position of the camera/viewport in the scene (meters).
+camera_pos              =   (4.0, 4.0, 2.4)     # Position of the camera/viewport in the scene (meters).
 
 # ARTICULATION INITIALIZATION
 root_init_pos           =   (0.0, 0.0, 0.40)    # Initial position of the articulation root in world frame (meters).

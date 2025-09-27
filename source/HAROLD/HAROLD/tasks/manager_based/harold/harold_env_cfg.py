@@ -124,35 +124,32 @@ class ObservationsCfg:
     class CriticCfg(ObsGroup):
         # LimX didn't add history to any of these terms, but I'm going to add them and see if it works ok.
         # Policy Observations
-        base_ang_vel                = ObsTerm(func=mdp.base_ang_vel, history_length=harold_cfg.obs_history_length)
-        proj_gravity                = ObsTerm(func=mdp.projected_gravity, history_length=harold_cfg.obs_history_length)
-        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=harold_cfg.obs_history_length)
-        joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=harold_cfg.obs_history_length)
-        last_action                 = ObsTerm(func=mdp.last_action, history_length=harold_cfg.obs_history_length)
+        base_ang_vel                = ObsTerm(func=mdp.base_ang_vel)
+        proj_gravity                = ObsTerm(func=mdp.projected_gravity)
+        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel                   = ObsTerm(func=mdp.joint_vel)
+        last_action                 = ObsTerm(func=mdp.last_action)
         velocity_command            = ObsTerm(
             func=mdp.generated_commands,
-            history_length=harold_cfg.obs_history_length,
             params={
                 "command_name": "base_velocity",
             }
         )
-        gait_phase = ObsTerm(func=mdp.get_gait_phase, history_length=harold_cfg.obs_history_length)
+        gait_phase = ObsTerm(func=mdp.get_gait_phase)
         gait_command                = ObsTerm(
             func=mdp.get_gait_command,
-            history_length=harold_cfg.obs_history_length,
             params={
                 "command_name": "gait_command"
             }
         )
 
         # Privileged Observations
-        base_lin_vel                = ObsTerm(func=mdp.base_lin_vel, history_length=harold_cfg.obs_history_length)
-        height                      = ObsTerm(func=mdp.base_pos_z, history_length=harold_cfg.obs_history_length)  # LimX uses a height scanner sensor for this, but for now I think this should be OK since we are on flat terrain.
-        robot_joint_torque          = ObsTerm(func=mdp.robot_joint_torque, history_length=harold_cfg.obs_history_length)
-        robot_joint_acc             = ObsTerm(func=mdp.robot_joint_acc, history_length=harold_cfg.obs_history_length)
+        base_lin_vel                = ObsTerm(func=mdp.base_lin_vel)
+        height                      = ObsTerm(func=mdp.base_pos_z)  # LimX uses a height scanner sensor for this, but for now I think this should be OK since we are on flat terrain.
+        robot_joint_torque          = ObsTerm(func=mdp.robot_joint_torque)
+        robot_joint_acc             = ObsTerm(func=mdp.robot_joint_acc)
         robot_feet_contact_force = ObsTerm(
             func=mdp.robot_feet_contact_force,
-            history_length=harold_cfg.obs_history_length,
             params={
                 "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["LeftFoot", "RightFoot"]),
             },
@@ -161,8 +158,8 @@ class ObservationsCfg:
         robot_inertia = ObsTerm(func=mdp.robot_inertia)
         robot_joint_stiffness = ObsTerm(func=mdp.robot_joint_stiffness)
         robot_joint_damping = ObsTerm(func=mdp.robot_joint_damping)
-        robot_pos = ObsTerm(func=mdp.robot_pos, history_length=harold_cfg.obs_history_length)
-        robot_vel = ObsTerm(func=mdp.robot_vel, history_length=harold_cfg.obs_history_length)
+        robot_pos = ObsTerm(func=mdp.robot_pos)
+        robot_vel = ObsTerm(func=mdp.robot_vel)
         robot_material_properties = ObsTerm(func=mdp.robot_material_properties)
         robot_base_pose = ObsTerm(func=mdp.robot_base_pose)
 
@@ -232,48 +229,46 @@ class EventCfg:
 ### --- MDP REWARDS --- ###
 @configclass
 class RewardsCfg:
-
-    keep_balance = RewTerm(
+    keep_balance                    = RewTerm(
         func=mdp.stay_alive,
-        weight=harold_cfg.stay_alive_rew_weight
+        weight=harold_cfg.keep_balance_weight
     )
-
-    # r_v
-    track_lin_vel_xy_exp =      RewTerm(
+    rew_lin_vel_xy                  = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=harold_cfg.xy_lin_vel_rew_weight,
+        weight=harold_cfg.rew_lin_vel_xy_weight,
         params={
             "command_name": "base_velocity",
             "std": math.sqrt(0.2)
         },
     )
-    # r_w
-    track_ang_vel_z_exp =       RewTerm(
+    rew_ang_vel_z                   = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=harold_cfg.z_ang_vel_rew_weight,
+        weight=harold_cfg.rew_ang_vel_z_weight,
         params={
             "command_name": "base_velocity",
             "std": math.sqrt(0.2)
         },
     )
-
-    pen_base_height = RewTerm(
+    pen_base_height                 = RewTerm(
         func=mdp.base_height_l2,
         params={
             "target_height": harold_cfg.target_height,
         },
-        weight=harold_cfg.base_height_rew_weight,
+        weight=harold_cfg.pen_base_height_weight,
     )
-
-    # r_vz
-    lin_vel_z_l2 =              RewTerm(func=mdp.lin_vel_z_l2, weight=harold_cfg.z_lin_vel_rew_weight)
-    # r_wxy
-    ang_vel_xy_l2 =             RewTerm(func=mdp.ang_vel_xy_l2, weight=harold_cfg.xy_ang_vel_rew_weight)
-    # (Not included in the BRAVER paper)
-    flat_orientation_rew =      RewTerm(func=mdp.flat_orientation_l2, weight=harold_cfg.flat_body_weight)
-
-    # Gait reward
-    test_gait_reward = RewTerm(
+    pen_lin_vel_z                   = RewTerm(func=mdp.lin_vel_z_l2, weight=harold_cfg.pen_lin_vel_z_weight)
+    pen_ang_vel_xy                  = RewTerm(func=mdp.ang_vel_xy_l2, weight=harold_cfg.pen_ang_vel_xy_weight)
+    pen_joint_torque                = RewTerm(func=mdp.joint_torques_l2, weight=harold_cfg.pen_joint_torque_weight)
+    pen_joint_accel                 = RewTerm(func=mdp.joint_acc_l2, weight=harold_cfg.pen_joint_accel_weight)
+    pen_action_rate                 = RewTerm(func=mdp.action_rate_l2, weight=harold_cfg.pen_action_rate_weight)
+    pen_action_smoothness           = RewTerm(func=mdp.ActionSmoothnessPenalty, weight=harold_cfg.pen_actn_smooth_weight)
+    pen_flat_orientation            = RewTerm(func=mdp.flat_orientation_l2, weight=harold_cfg.flat_body_weight)
+    # pen_feet_distance not included until we switch to a point foot CAD model.
+    # pen_feet_regulation not included until we switch to a point foot CAD model.
+    # foot_landing_vel not included until we switch to a point foot CAD model.
+    pen_joint_vel_l2                = RewTerm(func=mdp.joint_vel_l2, weight=harold_cfg.pen_joint_vel_l2_weight)
+    pen_joint_powers                = RewTerm(func=mdp.joint_powers_l1, weight=harold_cfg.pen_joint_powers_weight)
+    test_gait_reward                = RewTerm(
         func=mdp.GaitReward,
         weight=1.0,
         params={
