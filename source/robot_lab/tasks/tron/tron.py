@@ -1,12 +1,14 @@
 import isaaclab.sim as sim_utils
+import os
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from . import robot_cfg
+from robot_lab import ROBOT_LAB_EXT_DIR
 
 ### --- ARTICULATION DEFINITION --- ###
 HAROLD_CFG = ArticulationCfg(
     spawn = sim_utils.UsdFileCfg(
-        usd_path=f"/home/c/Documents/harold/sim/source/robot_lab/assets/USD_PF_TRON1A/PF_TRON1A.usd", # Path to USD file.
+        usd_path=f"{ROBOT_LAB_EXT_DIR}/source/robot_lab/assets/USD_PF_TRON1A/PF_TRON1A.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
