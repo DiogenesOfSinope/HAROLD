@@ -23,13 +23,17 @@ LEG_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.0),
+        pos=(0.0, 0.0, 1.0),
         joint_pos={                 # Initial positions of the joints (radians).
+            "Hip": 0.0,
+            "Thigh_01": 0.916,
+            "Knee": 0.785,
+            },
+        joint_vel={
             "Hip": 0.0,
             "Thigh_01": 0.0,
             "Knee": 0.0,
-            },
-        joint_vel={".*": 0.0},      # Initial velocities of the joints (radians/second).
+            },      # Initial velocities of the joints (radians/second).
     ),
     soft_joint_pos_limit_factor=1.0,
     actuators={

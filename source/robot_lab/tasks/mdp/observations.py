@@ -7,26 +7,80 @@ from isaaclab.assets import Articulation
 import isaaclab.utils.math as math_utils
 
 def phase_sin_cos(env: ManagerBasedRLEnv, T: float) -> torch.Tensor:
-    """
-    Observes the sin and cos of the current gait phase.
-    This provides a continuous clock signal to the agent.
-    
-    Args:
-        T: The period of the walking cycle in seconds.
-    """
-    # Calculate continuous phase [0, 1]
-    current_time = env.episode_length_buf * env.step_dt
+    current_time = env.episode_length_buf *  env.step_dt
     freq = 1.0 / T
-    phase = (current_time * freq) % 1.0
-    
-    # Convert to Sin/Cos to avoid discontinuity at 0/1
-    # Shape: (num_envs, 2)
+    phase = (current_time *  freq) % 1.0
+
     phase_signal = torch.stack([
         torch.sin(2 * math.pi * phase),
         torch.cos(2 * math.pi * phase)
     ], dim=-1)
-    
+
     return phase_signal
+
+def actual_foot_pos_world(
+        env: ManagerBasedRLEnv,
+        asset_cfg: SceneEntityCfg,
+        foot_offset
+) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    body_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids[0], :]
+    body_quat_w = asset.data.body_quat_w[:, asset_cfg.body_ids[0], :]
+
+    offset_local = torch.tensor(foot_offset, device=env.device)
+    offset_batch = offset_local.repeat(env.num_envs, 1)
+    offset_world =  math_utils.quat_apply(body_quat_w, offset_batch)
+
+    feet_pos_w = body_pos_w + offset_world
+
+    #print(    f"Real X: {feet_pos_w[0, 0].item():.3f} | " f"Real Y: {feet_pos_w[0, 1].item():.3f} | " #f"Real Z: {feet_pos_w[0, 2].item():.3f}")
+
+    return feet_pos_w
+
+def target_foot_pos_world(
+        env: ManagerBasedRLEnv,
+        step_height,
+        step_length,
+        T,
+        foot_centre_pos
+) -> torch.Tensor:
+    Ly = step_length / 2.0
+
+    current_time = env.episode_length_buf * env.step_dt
+    freq = 1.0 / T
+    phase = (current_time * freq) % 1.0
+
+    target_x_rel = torch.zeros_like(phase)
+    target_y_rel = torch.zeros_like(phase)
+    target_z_rel = torch.zeros_like(phase)
+
+    is_stance = phase < 0.5
+    is_swing = ~is_stance
+
+    # Stance
+    t_s = phase[is_stance] / 0.5
+    target_x_rel[is_stance] = 0.0
+    target_y_rel[is_stance] = Ly * (1 - 2 * t_s)
+    target_z_rel[is_stance] = 0.0
+
+    # Swing
+    t_w = (phase[is_swing] - 0.5) / 0.5
+    target_x_rel[is_swing] = 0.0
+    target_y_rel[is_swing] = -Ly + (2 * Ly  * t_w)
+    target_z_rel[is_swing] = torch.where(t_w < 0.5, step_height * (t_w * 2), step_height * (2 - t_w * 2))
+
+    center_pos = torch.tensor(foot_centre_pos, device=env.device)
+    target_pos_w = center_pos.repeat(env.num_envs, 1)
+
+    target_pos_w[:, 0] += target_x_rel
+    target_pos_w[:, 1] += target_y_rel
+    target_pos_w[:, 2] += target_z_rel
+
+    #print(f"DEBUG [Env 0] Phase: {phase[0].item():.2f} | " f"Tgt X: {target_pos_w[0, 0].item():.3f} | " f"Tgt Y: {target_pos_w[0, 1].item():.3f} | " f"Tgt Z: {target_pos_w[0, 2].item():.3f}")
+
+    return target_pos_w
+
 
 # I've validated that this function seems to be working correctly.
 def feet_contact(
