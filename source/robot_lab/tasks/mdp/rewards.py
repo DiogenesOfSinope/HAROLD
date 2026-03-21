@@ -5,6 +5,70 @@ from isaaclab.managers import SceneEntityCfg, ManagerTermBase, RewardTermCfg
 from isaaclab.sensors import ContactSensor, RayCaster
 from isaaclab.assets import Articulation, RigidObject
 import isaaclab.utils.math as math_utils
+import math
+
+def track_step_trajectory(
+        env: ManagerBasedRLEnv,
+        asset_cfg: SceneEntityCfg,
+        stride_x: float,
+        stride_y: float,
+        clearance_z: float,
+        cycle_period: float,
+        stance_ratio: float,
+        foot_offset: tuple[float, float, float],
+        foot_centre_pos: tuple[float, float, float]
+) -> torch.Tensor:
+    
+    # Get the actual foot position
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    body_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids[0], :]
+    body_quat_w = asset.data.body_quat_w[:, asset_cfg.body_ids[0], :]
+
+    offset_local = torch.tensor(foot_offset, device=env.device)
+    offset_batch = offset_local.repeat(env.num_envs, 1)
+    offset_world = math_utils.quat_apply(body_quat_w, offset_batch)
+
+    feet_pos_w = body_pos_w + offset_world
+    feet_pos_local = feet_pos_w - env.scene.env_origins
+
+    # Compute target trajectory
+    t = env.episode_length_buf * env.step_dt
+    cycle_time = torch.fmod(t, cycle_period)
+    phase = cycle_time / cycle_period
+
+    target_x_rel = torch.zeros_like(phase)
+    target_y_rel = torch.zeros_like(phase)
+    target_z_rel = torch.zeros_like(phase)
+
+    is_stance = phase < stance_ratio
+    is_swing = ~is_stance
+
+    # Stance phase calculation
+    p_stance = phase[is_stance] / stance_ratio
+    target_x_rel[is_stance] = (stride_x / 2.0) - (p_stance * stride_x)
+    target_y_rel[is_stance] = (stride_y / 2.0) - (p_stance * stride_y)
+    target_z_rel[is_stance] = 0.0
+
+    # Swing phase calculation (Sinusoidal clearance arc)
+    p_swing = (phase[is_swing] - stance_ratio) / (1.0 - stance_ratio)
+    target_x_rel[is_swing] = -(stride_x / 2.0) + (p_swing * stride_x)
+    target_y_rel[is_swing] = -(stride_y / 2.0) + (p_swing * stride_y)
+    target_z_rel[is_swing] = clearance_z * torch.sin(p_swing * math.pi)
+
+    # Offset to the target center
+    center_pos = torch.tensor(foot_centre_pos, device=env.device)
+    target_pos_w = center_pos.repeat(env.num_envs, 1)
+
+    target_pos_w[:, 0] += target_x_rel
+    target_pos_w[:, 1] += target_y_rel
+    target_pos_w[:, 2] += target_z_rel
+
+    # Error evaluation between calculated trajectory and real coordinate
+    error = torch.norm(target_pos_w - feet_pos_local, dim=-1)
+        
+    return error
+
 
 def keep_foot_in_pos(
         env: ManagerBasedRLEnv,

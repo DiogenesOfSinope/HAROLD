@@ -39,38 +39,37 @@ def actual_foot_pos_local(
     #print(    f"Real X: {feet_pos_local[0, 0].item():.3f} | " f"Real Y: {feet_pos_local[0, 1].item():.3f} | " #f"Real Z: {feet_pos_local[0, 2].item():.3f}")
 
     return feet_pos_local
-
 def target_foot_pos_local(
         env: ManagerBasedRLEnv,
-        step_height,
-        step_length,
-        T,
-        foot_centre_pos
+        stride_x: float,
+        stride_y: float,
+        clearance_z: float,
+        cycle_period: float,
+        stance_ratio: float,
+        foot_centre_pos: tuple[float, float, float]
 ) -> torch.Tensor:
-    Ly = step_length / 2.0
-
-    current_time = env.episode_length_buf * env.step_dt
-    freq = 1.0 / T
-    phase = (current_time * freq) % 1.0
+    t = env.episode_length_buf * env.step_dt
+    cycle_time = torch.fmod(t, cycle_period)
+    phase = cycle_time / cycle_period
 
     target_x_rel = torch.zeros_like(phase)
     target_y_rel = torch.zeros_like(phase)
     target_z_rel = torch.zeros_like(phase)
 
-    is_stance = phase < 0.5
+    is_stance = phase < stance_ratio
     is_swing = ~is_stance
 
     # Stance
-    t_s = phase[is_stance] / 0.5
-    target_x_rel[is_stance] = 0.0
-    target_y_rel[is_stance] = Ly * (1 - 2 * t_s)
+    p_stance = phase[is_stance] / stance_ratio
+    target_x_rel[is_stance] = (stride_x / 2.0) - (p_stance * stride_x)
+    target_y_rel[is_stance] = (stride_y / 2.0) - (p_stance * stride_y)
     target_z_rel[is_stance] = 0.0
 
     # Swing
-    t_w = (phase[is_swing] - 0.5) / 0.5
-    target_x_rel[is_swing] = 0.0
-    target_y_rel[is_swing] = -Ly + (2 * Ly  * t_w)
-    target_z_rel[is_swing] = torch.where(t_w < 0.5, step_height * (t_w * 2), step_height * (2 - t_w * 2))
+    p_swing = (phase[is_swing] - stance_ratio) / (1.0 - stance_ratio)
+    target_x_rel[is_swing] = -(stride_x / 2.0) + (p_swing * stride_x)
+    target_y_rel[is_swing] = -(stride_y / 2.0) + (p_swing * stride_y)
+    target_z_rel[is_swing] = clearance_z * torch.sin(p_swing * math.pi)
 
     center_pos = torch.tensor(foot_centre_pos, device=env.device)
     target_pos_w = center_pos.repeat(env.num_envs, 1)
@@ -78,8 +77,6 @@ def target_foot_pos_local(
     target_pos_w[:, 0] += target_x_rel
     target_pos_w[:, 1] += target_y_rel
     target_pos_w[:, 2] += target_z_rel
-
-    #print(f"DEBUG [Env 0] Phase: {phase[0].item():.2f} | " f"Tgt X: {target_pos_w[0, 0].item():.3f} | " f"Tgt Y: {target_pos_w[0, 1].item():.3f} | " f"Tgt Z: {target_pos_w[0, 2].item():.3f}")
 
     return target_pos_w
 
