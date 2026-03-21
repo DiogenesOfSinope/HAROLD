@@ -52,7 +52,7 @@ class ObservationsCfg:
         joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
         joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
 
-        #phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 2.0})
+        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 2.0})
 
         # Post initialization.
         def __post_init__(self) -> None:
@@ -64,15 +64,15 @@ class ObservationsCfg:
         joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10)
         joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10)
         
-        #phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 2.0})
-        #target_foot_pos = ObsTerm(
-        #    func=mdp.target_foot_pos_local,
-        #    params={"step_height": 0.05, "step_length": 0.20, "T": 2.0, "foot_centre_pos": (0.0, 0.15, 0.70)}
-        #)
-        #actual_foot_pos = ObsTerm(
-        #    func=mdp.actual_foot_pos_local,
-        #    params={"asset_cfg": SceneEntityCfg("robot", body_names=["Calf"]), "foot_offset": (0.0, 0.0, -0.25)}
-        #)
+        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 2.0})
+        target_foot_pos = ObsTerm(
+            func=mdp.target_foot_pos_local,
+            params={"step_height": 0.05, "step_length": 0.20, "T": 2.0, "foot_centre_pos": (0.0, 0.15, 0.70)}
+        )
+        actual_foot_pos = ObsTerm(
+            func=mdp.actual_foot_pos_local,
+            params={"asset_cfg": SceneEntityCfg("robot", body_names=["Calf"]), "foot_offset": (0.0, 0.0, -0.25)}
+        )
 
         # Post initialization.
         def __post_init__(self) -> None:
