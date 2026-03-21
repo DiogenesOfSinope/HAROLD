@@ -1,6 +1,6 @@
 import isaaclab.sim as sim_utils
 import os
-from isaaclab.actuators import ImplicitActuatorCfg
+from isaaclab.actuators import DelayedPDActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from robot_lab import ROBOT_LAB_EXT_DIR
 
@@ -35,40 +35,49 @@ LEG_CFG = ArticulationCfg(
             "Knee": 0.0,
             },      # Initial velocities of the joints (radians/second).
     ),
-    soft_joint_pos_limit_factor=1.0,
+    soft_joint_pos_limit_factor=0.95,
     actuators={
-        "HipActuator": ImplicitActuatorCfg(
+        "HipActuator": DelayedPDActuatorCfg(
             joint_names_expr=["Hip"],
-            effort_limit_sim = 60.0,
-            velocity_limit_sim=19.9,
+            effort_limit_sim = 42.0,
+            velocity_limit_sim=18.8,
             stiffness={
                 ".*": 60.0
             },
             damping={
                 ".*": 4.0
             },
+            armature=0.02,
+            min_delay=0,
+            max_delay=15
         ),
-        "ThighActuator": ImplicitActuatorCfg(
+        "ThighActuator": DelayedPDActuatorCfg(
             joint_names_expr=["Thigh_01"],
-            effort_limit_sim=60.0,
-            velocity_limit_sim=19.9,
+            effort_limit_sim=42.0,
+            velocity_limit_sim=18.8,
             stiffness={
                 ".*": 60.0
             },
             damping={
                 ".*": 4.0
             },
+            armature=0.02,
+            min_delay=0,
+            max_delay=15
         ),
-        "KneeActuator": ImplicitActuatorCfg(
+        "KneeActuator": DelayedPDActuatorCfg(
             joint_names_expr=["Knee"],
-            effort_limit_sim=60.0,
-            velocity_limit_sim=19.9,
+            effort_limit_sim=42.0,
+            velocity_limit_sim=18.8,
             stiffness={
                 ".*": 60.0
             },
             damping={
                 ".*": 4.0
             },
+            armature=0.02,
+            min_delay=0,
+            max_delay=15
         ),
     },
 )

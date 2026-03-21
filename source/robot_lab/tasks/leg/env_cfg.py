@@ -13,6 +13,7 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as UniformNoise
+from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as GaussianNoise
 from .leg import LEG_CFG
 from .. import mdp
 
@@ -48,8 +49,8 @@ class ObservationsCfg:
     # Define the observation terms available to the agent.
     @configclass
     class PolicyCfg(ObsGroup):
-        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10, noise=UniformNoise(n_min=-0.01, n_max=0.01))
-        joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10, noise=UniformNoise(n_min=-0.5, n_max=0.5))
+        joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
+        joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
 
         #phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 2.0})
 
@@ -90,18 +91,27 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=["Hip_01","Thigh","RS03","Calf"]),
-            "mass_distribution_params": (0.85,1.15),
+            "mass_distribution_params": (0.7,1.4),
             "operation": "scale",
         },
         is_global_time=False,
         min_step_count_between_reset=0,
+    )
+    radomize_rigid_body_mass_inertia = EventTerm(
+        func=mdp.randomize_rigid_body_mass_inertia,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "mass_inertia_distribution_params": (0.7, 1.4),
+            "operation": "scale",
+        },
     )
     randomize_coms = EventTerm(
         func=mdp.randomize_rigid_body_coms,
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot"),
-            "com_distribution_params": ((-0.01, 0.01), (-0.01, 0.01), (-0.01, 0.01)),
+            "com_distribution_params": ((-0.05, 0.05), (-0.05, 0.05), (-0.05, 0.05)),
             "operation": "add",
             "distribution": "uniform",
         },
@@ -111,8 +121,8 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["Hip", "Thigh_01", "Knee"]),
-            "stiffness_distribution_params": (15.0, 60.0),
-            "damping_distribution_params": (1.0, 4.0),
+            "stiffness_distribution_params": (30.0, 120.0),
+            "damping_distribution_params": (2.0, 8.0),
             "operation": "abs",
             "distribution": "uniform",
         },
@@ -142,7 +152,7 @@ class EventCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["Thigh_01"]),
             "position_range": (0.0, 1.83),
-            "velocity_range": (0.0, 0.5),
+            "velocity_range": (-0.5, 0.5),
         },
         is_global_time=False,
         min_step_count_between_reset=0,
@@ -153,7 +163,7 @@ class EventCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["Thigh_01"]),
             "position_range": (0.0, 1.57),
-            "velocity_range": (0.0, 0.5),
+            "velocity_range": (-0.5, 0.5),
         },
         is_global_time=False,
         min_step_count_between_reset=0,
@@ -163,16 +173,16 @@ class EventCfg:
     push_robot = EventTerm(
         func=mdp.apply_external_force_torque_stochastic,
         mode="interval",
-        interval_range_s=(0.0, 20.0),
+        interval_range_s=(0.0, 0.0),
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=["Thigh","RS03","Calf"]),
             "force_range": {
-                "x": (-10.0, 10.0),
-                "y": (-10.0, 10.0),
-                "z": (-10.0, 10.0),
+                "x": (-200.0, 200.0),
+                "y": (-200.0, 200.0),
+                "z": (-200.0, 200.0),
             },
             "torque_range": {"x": (-15.0, 15.0), "y": (-15.0, 15.0), "z": (-15.0, 15.0)},
-            "probability": 0.004,  # Expect step = 1 / probability
+            "probability": 0.002,  # Expect step = 1 / probability
         },
         is_global_time=False,
         min_step_count_between_reset=0,
