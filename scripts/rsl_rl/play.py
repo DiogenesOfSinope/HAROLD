@@ -183,7 +183,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     logged_joint_vel = []
 
     # simulate environment
-    while simulation_app.is_running() and (timestep < 4000):
+    while simulation_app.is_running() and (timestep < 1000):
         print(timestep)
         start_time = time.time()
         # run everything in inference mode

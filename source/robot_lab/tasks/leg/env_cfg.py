@@ -257,6 +257,6 @@ class LegEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 4
         self.episode_length_s = 20.0
         self.viewer.eye = (8.0, 8.0, 4.8)
-        self.sim.dt = 0.00125
+        self.sim.dt = 0.005
         self.sim.render_interval = 4
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
