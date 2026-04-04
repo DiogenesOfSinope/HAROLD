@@ -47,7 +47,7 @@ LEG_CFG = ArticulationCfg(
             damping={
                 ".*": 4.0
             },
-            armature=0.02,
+            armature=0.011,
             min_delay=0,
             max_delay=15
         ),
@@ -61,7 +61,7 @@ LEG_CFG = ArticulationCfg(
             damping={
                 ".*": 4.0
             },
-            armature=0.02,
+            armature=0.011,
             min_delay=0,
             max_delay=15
         ),
@@ -75,7 +75,7 @@ LEG_CFG = ArticulationCfg(
             damping={
                 ".*": 4.0
             },
-            armature=0.02,
+            armature=0.011,
             min_delay=0,
             max_delay=15
         ),

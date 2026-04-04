@@ -73,8 +73,8 @@ class ObservationsCfg:
                 "clearance_z": 0.06, 
                 "cycle_period": 5.0, 
                 "stance_ratio": 0.5, 
-                "foot_centre_pos": (-0.0025, 0.112, 0.743)
-            }
+                "foot_centre_pos": (-0.0025, 0.112, 0.643)
+            } # Was (-0.0025, 0.112, 0.743)
         )
         actual_foot_pos = ObsTerm(
             func=mdp.actual_foot_pos_local,
@@ -98,7 +98,7 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=["Hip_01","Thigh","RS03","Calf"]),
-            "mass_distribution_params": (0.7,1.4),
+            "mass_distribution_params": (0.8,1.2),
             "operation": "scale",
         },
         is_global_time=False,
@@ -109,7 +109,7 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot"),
-            "mass_inertia_distribution_params": (0.7, 1.4),
+            "mass_inertia_distribution_params": (0.8, 1.2),
             "operation": "scale",
         },
     )
@@ -118,7 +118,7 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot"),
-            "com_distribution_params": ((-0.05, 0.05), (-0.05, 0.05), (-0.05, 0.05)),
+            "com_distribution_params": ((-0.025, 0.025), (-0.025, 0.025), (-0.025, 0.025)),
             "operation": "add",
             "distribution": "uniform",
         },
@@ -128,8 +128,8 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["Hip", "Thigh_01", "Knee"]),
-            "stiffness_distribution_params": (30.0, 120.0),
-            "damping_distribution_params": (2.0, 8.0),
+            "stiffness_distribution_params": (50.0, 75.0),
+            "damping_distribution_params": (3.3, 5.0),
             "operation": "abs",
             "distribution": "uniform",
         },
@@ -210,8 +210,8 @@ class RewardsCfg:
             "cycle_period": 5.0, 
             "stance_ratio": 0.5, 
             "foot_offset": (0.0, 0.0, -0.25),
-            "foot_centre_pos": (-0.0025, 0.112, 0.743)
-        }
+            "foot_centre_pos": (-0.0025, 0.112, 0.643)
+        } # Was (-0.0025, 0.112, 0.743)
     )
     #pen_joint_torque                = RewTerm(func=mdp.joint_torques_l2, weight=-0.00008)
     #pen_joint_accel                 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
