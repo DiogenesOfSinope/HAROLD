@@ -9,6 +9,7 @@
 
 import argparse
 import sys
+import numpy as np
 
 from isaaclab.app import AppLauncher
 
@@ -177,8 +178,13 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # reset environment
     obs = env.get_observations()
     timestep = 0
+
+    logged_joint_pos = []
+    logged_joint_vel = []
+
     # simulate environment
-    while simulation_app.is_running():
+    while simulation_app.is_running() and (timestep < 4000):
+        print(timestep)
         start_time = time.time()
         # run everything in inference mode
         with torch.inference_mode():
@@ -186,8 +192,11 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             actions = policy(obs)
             # env stepping
             obs, _, _, _ = env.step(actions)
+        robot = env.unwrapped.scene["robot"]
+        logged_joint_pos.append(robot.data.joint_pos.clone().cpu())
+        logged_joint_vel.append(robot.data.joint_vel.clone().cpu())
+        timestep += 1
         if args_cli.video:
-            timestep += 1
             # Exit the play loop after recording one video
             if timestep == args_cli.video_length:
                 break
@@ -196,6 +205,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         sleep_time = dt - (time.time() - start_time)
         if args_cli.real_time and sleep_time > 0:
             time.sleep(sleep_time)
+
+    if logged_joint_pos:
+        stacked_pos = torch.stack(logged_joint_pos).numpy()
+        stacked_vel = torch.stack(logged_joint_vel).numpy()
+        
+        save_dir = os.path.dirname(resume_path)
+        save_file = os.path.join(save_dir, "joint_data_log.npz")
+        
+        np.savez(save_file, joint_pos=stacked_pos, joint_vel=stacked_vel)
+        print(f"[INFO] Saved joint position and velocity data to: {save_file}")
 
     # close the simulator
     env.close()
