@@ -137,6 +137,25 @@ class EventCfg:
         min_step_count_between_reset=0,
     )
 
+    randomize_joint_physical_props = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["Hip", "Thigh_01", "Knee"]),
+            
+            "armature_distribution_params": (0.008, 0.020),
+            
+            "friction_distribution_params": (0.15, 1.60),
+            
+            "damping_distribution_params": (0.01, 0.30),
+            
+            "operation": "abs", 
+            "distribution": "uniform",
+        },
+        is_global_time=False,
+        min_step_count_between_reset=0,
+    )
+
     # ON RESET:
     
     # Hip Limits: -90.0 to 30.0 degrees.
