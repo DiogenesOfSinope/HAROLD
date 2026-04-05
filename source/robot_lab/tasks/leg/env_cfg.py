@@ -52,7 +52,7 @@ class ObservationsCfg:
         joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
         joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10, noise=GaussianNoise(mean=0.0, std=0.01))
 
-        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 5.0})
+        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 1.5})
 
         # Post initialization.
         def __post_init__(self) -> None:
@@ -64,14 +64,14 @@ class ObservationsCfg:
         joint_pos                   = ObsTerm(func=mdp.joint_pos_rel, history_length=10)
         joint_vel                   = ObsTerm(func=mdp.joint_vel, history_length=10)
         
-        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 5.0})
+        phase_signal = ObsTerm(func=mdp.phase_sin_cos, params={"T": 1.5})
         target_foot_pos = ObsTerm(
             func=mdp.target_foot_pos_local,
             params={
                 "stride_x": 0.0, 
                 "stride_y": 0.10, 
                 "clearance_z": 0.06, 
-                "cycle_period": 5.0, 
+                "cycle_period": 1.5, 
                 "stance_ratio": 0.5, 
                 "foot_centre_pos": (-0.0025, 0.112, 0.643)
             } # Was (-0.0025, 0.112, 0.743)
@@ -224,7 +224,7 @@ class RewardsCfg:
             "stride_x": 0.0, 
             "stride_y": 0.10, 
             "clearance_z": 0.06, 
-            "cycle_period": 5.0, 
+            "cycle_period": 1.5, 
             "stance_ratio": 0.5, 
             "foot_offset": (0.0, 0.0, -0.25),
             "foot_centre_pos": (-0.0025, 0.112, 0.643)
