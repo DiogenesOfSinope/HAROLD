@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def main():
     # 1. Load the logged data
-    file_path = "/home/c/Documents/harold/sim/logs/rsl_rl/leg/2026-04-04_17-32-03/joint_data_log.npz"
+    file_path = "/home/c/Documents/harold/sim/logs/rsl_rl/leg/2026-04-05_02-45-42/joint_data_log.npz"
     try:
         data = np.load(file_path)
     except FileNotFoundError:

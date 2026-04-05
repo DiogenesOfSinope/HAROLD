@@ -230,11 +230,9 @@ class RewardsCfg:
             "foot_centre_pos": (-0.0025, 0.112, 0.643)
         } # Was (-0.0025, 0.112, 0.743)
     )
-    #pen_joint_torque                = RewTerm(func=mdp.joint_torques_l2, weight=-0.00008)
+    pen_joint_torque                = RewTerm(func=mdp.joint_torques_l2, weight=-0.000008)
     #pen_joint_accel                 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    #pen_action_rate                 = RewTerm(func=mdp.action_rate_l2, weight=-16.0)
-    #pen_action_smoothness           = RewTerm(func=mdp.ActionSmoothnessPenalty, weight=-0.04)
-
+    pen_action_rate                 = RewTerm(func=mdp.action_rate_l2, weight=-0.03)
 
 ### --- MDP TERMINATIONS --- ###
 @configclass
